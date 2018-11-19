@@ -17,9 +17,15 @@ namespace CityInfo.API
         {
         }
 
+        // ConfigureServices is an optional method. 
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Configure method uses services that are registered and configured in that method
+            // it's used to specify how an asp.net core app will respond to individual HTTP requests.
+            // use MVC for handling HTTP request
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
