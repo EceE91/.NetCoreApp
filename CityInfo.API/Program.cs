@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+// this class is responsible for configuring and running the application
+
 namespace CityInfo.API
 {
     public class Program

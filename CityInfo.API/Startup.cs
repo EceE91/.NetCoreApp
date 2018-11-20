@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+
+// this class is the entry point of our web app
 
 namespace CityInfo.API
 {
@@ -15,6 +18,13 @@ namespace CityInfo.API
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // ConfigureServices is used to add services to the container
+            // and to configure those services.
+
+            //call service then add MVC middleware to the pipeline
+            services.AddMvc()
+               .AddMvcOptions(o => o.OutputFormatters.Add(
+                   new XmlDataContractSerializerOutputFormatter()));
         }
 
         // ConfigureServices is an optional method. 
@@ -28,13 +38,35 @@ namespace CityInfo.API
 
             if (env.IsDevelopment())
             {
+                // this configures request pipeline by adding the developer exception page middleware
+                // So, when an exception is thrown this middleware will handle it
                 app.UseDeveloperExceptionPage();
             }
-
-            app.Run(async (context) =>
+            else
             {
-                await context.Response.WriteAsync("Hello World!");
-            });
+                // IHostingEnvironment env gives us info about our hosting environment, app name vs
+                // şu an development environmentındayız ancak istersek bunu DEBUG 
+                // altından production'a da çevirebilirz
+                // eğer development'ta değilsek hata buraya düşecek
+                app.UseExceptionHandler();
+            }
+
+            app.UseStatusCodePages();
+
+            // add mvc middleware to the pipeline
+            app.UseMvc();
+
+            //exception handler middleware
+            // show only in development envirenment (not in production environment)
+            //app.Run((context) =>
+            //{
+            //    throw new Exception("Sample Exception");
+            //});
+
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Hello World!");
+            //});
         }
     }
 }
