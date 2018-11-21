@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Serialization;
 
 // this class is the entry point of our web app
 
@@ -25,6 +26,15 @@ namespace CityInfo.API
             services.AddMvc()
                .AddMvcOptions(o => o.OutputFormatters.Add(
                    new XmlDataContractSerializerOutputFormatter()));
+
+            // if we want to see json string to be the same as in class object 
+            // like writing Name instead of name, we use this formattin optiom
+            //services.AddMvc().AddJsonOptions(o => {
+            //if (o.SerializerSettings.ContractResolver != null) {
+            //    var castedResolver = o.SerializerSettings.ContractResolver as DefaultContractResolver;
+            //        castedResolver.NamingStrategy = null;
+            //    }
+            //});
         }
 
         // ConfigureServices is an optional method. 
@@ -51,6 +61,7 @@ namespace CityInfo.API
                 app.UseExceptionHandler();
             }
 
+            // add statuscode middleware to the pipeline
             app.UseStatusCodePages();
 
             // add mvc middleware to the pipeline
