@@ -1,6 +1,7 @@
 ﻿using CityInfo.API.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,17 +12,37 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class PointsOfInterestController : Controller
     {
+
+        private ILogger<PointsOfInterestController> _logger;
+
+        // constructor injection
+        public PointsOfInterestController(ILogger<PointsOfInterestController> logger)
+        {
+            _logger = logger;
+        }
+
+
+
         [HttpGet("{cityId}/pointsOfInterest")]
         public IActionResult GetPointsOfInterest(int cityId)
         {
-            // return error if cityId (parent) doesn't exist
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            try
             {
-                return NotFound();
-            }
+                // return error if cityId (parent) doesn't exist
+                var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+                if (city == null)
+                {
+                    _logger.LogInformation($"City with cityID {cityId} is not found");
+                    return NotFound();
+                }
 
-            return Ok(city.PointsOfInterest);
+                return Ok(city.PointsOfInterest);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical($"Exception with cityId {cityId}");
+                return StatusCode(500, "A problem arised");
+            }
         }
 
         [HttpGet("{cityId}/pointsOfInterest/{id}", Name = "GetPointOfInterest")]
@@ -201,7 +222,6 @@ namespace CityInfo.API.Controllers
             {
                 return NotFound();
             }
-
 
             city.PointsOfInterest.Remove(oldPointOfInterest);
             return NoContent(); // return 204 if successful

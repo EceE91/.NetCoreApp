@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 
 // this class is the entry point of our web app
@@ -40,8 +41,15 @@ namespace CityInfo.API
         // ConfigureServices is an optional method. 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            // dependecy injection
+            // built-in logger system
+            loggerFactory.AddConsole(); // log to the console window
+
+            loggerFactory.AddDebug(); // log to debug window
+
+
             // Configure method uses services that are registered and configured in that method
             // it's used to specify how an asp.net core app will respond to individual HTTP requests.
             // use MVC for handling HTTP request
