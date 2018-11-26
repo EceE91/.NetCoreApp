@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CityInfo.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +38,26 @@ namespace CityInfo.API
             //        castedResolver.NamingStrategy = null;
             //    }
             //});
+
+
+            // mail service (container)
+            // Transient lifetime services are created each time they are requested
+            // AddTransient is best for lightweight stateless services
+            // tell the container that whenever we inject an IMailService,
+            // we want it to provide us with an instance of LocalMailService
+            //services.AddTransient<IMailService, LocalMailService>();
+
+            // use compiler directives to differentiate between local and cloudservice
+            // a compiler directive tells the compiler to omit or include certain pieces
+            // of code on compile, depending on the symbol used
+
+
+#if DEBUG
+            services.AddTransient<IMailService, LocalMailService>();
+#else
+            services.AddTransient<IMailService, CloudMailService>();
+#endif
+
         }
 
         // ConfigureServices is an optional method. 

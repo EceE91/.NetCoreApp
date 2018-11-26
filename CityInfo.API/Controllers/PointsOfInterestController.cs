@@ -1,4 +1,5 @@
 ﻿using CityInfo.API.Models;
+using CityInfo.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,17 +14,18 @@ namespace CityInfo.API.Controllers
     public class PointsOfInterestController : Controller
     {
 
-        private ILogger<PointsOfInterestController> _logger;
+        private ILogger<PointsOfInterestController> _logger; // dependency injection
+        private IMailService _mailService;
 
         // constructor injection
-        public PointsOfInterestController(ILogger<PointsOfInterestController> logger)
+        public PointsOfInterestController(ILogger<PointsOfInterestController> logger, IMailService mailService)
         {
             _logger = logger;
+            _mailService = mailService;
         }
 
 
-
-        [HttpGet("{cityId}/pointsOfInterest")]
+        [HttpGet("{cityId}/pointsOfInterest")] // fetch by id
         public IActionResult GetPointsOfInterest(int cityId)
         {
             try
@@ -48,7 +50,7 @@ namespace CityInfo.API.Controllers
             }
         }
 
-        [HttpGet("{cityId}/pointsOfInterest/{id}", Name = "GetPointOfInterest")]
+        [HttpGet("{cityId}/pointsOfInterest/{id}", Name = "GetPointOfInterest")] // fetch 
         public IActionResult GetPointsOfInterest(int cityId, int id)
         {
             var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
@@ -68,7 +70,7 @@ namespace CityInfo.API.Controllers
         }
 
 
-        [HttpPost("{cityId}/pointsofinterest")]
+        [HttpPost("{cityId}/pointsofinterest")] // create new one
         public IActionResult CreatePointOfInterest(int cityId,
             [FromBody] PointOfInterestForCreationDto pointOfInterest)
         {
@@ -110,7 +112,7 @@ namespace CityInfo.API.Controllers
                 new { cityId = cityId, id = finalPointOfInterest.Id }, finalPointOfInterest);
         }
 
-        [HttpPut("{cityId}/pointsofinterest/{id}")]
+        [HttpPut("{cityId}/pointsofinterest/{id}")] // full update
         public IActionResult UpdatePointOfInterest(int cityId, int id,
             [FromBody] PointOfInterestForUpdateDto pointOfInterest)
         {
@@ -149,7 +151,7 @@ namespace CityInfo.API.Controllers
         }
 
 
-        [HttpPatch("{cityId}/pointsofinterest/{id}")]
+        [HttpPatch("{cityId}/pointsofinterest/{id}")] // partial update
         public IActionResult PartiallyUpdatePointOfInterest(int cityId, int id,
            [FromBody] JsonPatchDocument<PointOfInterestForUpdateDto> patchDoc)
         {
@@ -209,7 +211,7 @@ namespace CityInfo.API.Controllers
         }
 
 
-        [HttpDelete("{cityId}/pointsofinterest")]
+        [HttpDelete("{cityId}/pointsofinterest/{id}")] // delete
         public IActionResult DeletePointOfInterest(int cityId, int id)
         {
             var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
@@ -227,6 +229,11 @@ namespace CityInfo.API.Controllers
             }
 
             city.PointsOfInterest.Remove(oldPointOfInterest);
+
+            // send mail when deleted
+            _mailService.Send("Poin of Interest is deleted"
+                , $"Point of Interest {oldPointOfInterest.Name} with id {oldPointOfInterest.Id} was deleted.");
+
             return NoContent(); // return 204 if successful
         }
     }
