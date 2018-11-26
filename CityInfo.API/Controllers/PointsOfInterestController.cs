@@ -28,8 +28,11 @@ namespace CityInfo.API.Controllers
         {
             try
             {
+               // throw new Exception("Exception Sample");
+
                 // return error if cityId (parent) doesn't exist
-                var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+                var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);                
+            
                 if (city == null)
                 {
                     _logger.LogInformation($"City with cityID {cityId} is not found");
@@ -38,10 +41,10 @@ namespace CityInfo.API.Controllers
 
                 return Ok(city.PointsOfInterest);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogCritical($"Exception with cityId {cityId}");
-                return StatusCode(500, "A problem arised");
+                _logger.LogCritical($"Exception while getting points of interest for city with id {cityId}.", ex);
+                return StatusCode(500, "A problem happened while handling your request.");
             }
         }
 

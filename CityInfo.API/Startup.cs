@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
+using NLog.Extensions.Logging;
 
 // this class is the entry point of our web app
 
@@ -45,10 +46,14 @@ namespace CityInfo.API
         {
             // dependecy injection
             // built-in logger system
-            loggerFactory.AddConsole(); // log to the console window
+            //loggerFactory.AddConsole(); // log to the console window
 
-            loggerFactory.AddDebug(); // log to debug window
+            //loggerFactory.AddDebug(); // log to debug window
 
+            // add NLog from Nuget
+            //loggerFactory.AddProvider(new NLog.Extensions.Logging.NLogLoggerProvider());
+            // or
+            loggerFactory.AddNLog(); // it writes to source\repos\CityInfo.API\CityInfo.API\bin\Debug\netcoreapp2.1
 
             // Configure method uses services that are registered and configured in that method
             // it's used to specify how an asp.net core app will respond to individual HTTP requests.
