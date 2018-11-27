@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using NLog.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 // this class is the entry point of our web app
 
@@ -18,6 +19,20 @@ namespace CityInfo.API
 {
     public class Startup
     {
+        // to read mail settings from appSettings.json, add configuration
+        public static IConfiguration Configuration;
+
+        public Startup(IHostingEnvironment env)
+        {
+            // this is showing the modularity of asp.net core
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appSettings.json", optional:false, reloadOnChange:true);
+
+            Configuration = builder.Build();
+        }
+
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -61,6 +76,7 @@ namespace CityInfo.API
         }
 
         // ConfigureServices is an optional method. 
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

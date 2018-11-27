@@ -15,7 +15,7 @@ namespace CityInfo.API.Controllers
     {
 
         private ILogger<PointsOfInterestController> _logger; // dependency injection
-        private IMailService _mailService;
+        private IMailService _mailService; // dependency injection
 
         // constructor injection
         public PointsOfInterestController(ILogger<PointsOfInterestController> logger, IMailService mailService)
@@ -30,7 +30,7 @@ namespace CityInfo.API.Controllers
         {
             try
             {
-               // throw new Exception("Exception Sample");
+                // throw new Exception("Exception Sample");
 
                 // return error if cityId (parent) doesn't exist
                 var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);                
