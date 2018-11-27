@@ -27,7 +27,8 @@ namespace CityInfo.API
             // this is showing the modularity of asp.net core
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appSettings.json", optional:false, reloadOnChange:true);
+                .AddJsonFile("appSettings.json", optional:false, reloadOnChange:true)
+                .AddJsonFile($"appSettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
             Configuration = builder.Build();
         }
