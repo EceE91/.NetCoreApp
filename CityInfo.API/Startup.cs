@@ -81,6 +81,9 @@ namespace CityInfo.API
             var connectionString = Startup.Configuration["connectionStrings:cityInfoDBConnectionString"];
             //var connectionString = @"Server=(localdb)\mssqllocaldb;Database=CityInfoDB;Trusted_Connection=true";
             services.AddDbContext<CityInfoContext>( o => o.UseSqlServer(connectionString));
+
+            // register repository, scoped lifetime is best for repository
+            services.AddScoped<ICityInfoRepository,CityInfoRepository>();
         }
 
         // ConfigureServices is an optional method. 
@@ -120,6 +123,8 @@ namespace CityInfo.API
             }
 
             context.EnsureSeedDataForContext(); // add data to database
+
+            
 
             // add statuscode middleware to the pipeline
             app.UseStatusCodePages();
