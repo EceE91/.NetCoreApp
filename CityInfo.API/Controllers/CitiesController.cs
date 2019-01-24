@@ -1,4 +1,5 @@
-﻿using CityInfo.API.Models;
+﻿using AutoMapper;
+using CityInfo.API.Models;
 using CityInfo.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -31,16 +32,8 @@ namespace CityInfo.API.Controllers
             // jsonresult dönersen postman requestinden xml dönmez sadece json döner
             //return new JsonResult(CitiesDataStore.Current.Cities);
             var cityEntities = _cityInfoRepository.GetCities();
-            var results = new List<CityWithoutPointsOfInterestDto>();
-
-            foreach (var city in cityEntities)
-            {
-                results.Add(new CityWithoutPointsOfInterestDto {
-                    Id = city.Id,
-                    Name = city.Name,
-                    Description = city.Description
-                });
-            }
+            var results = Mapper.Map<IEnumerable<CityWithoutPointsOfInterestDto>>(cityEntities);
+            
             return Ok(results);
         }
 
@@ -63,31 +56,13 @@ namespace CityInfo.API.Controllers
 
             if (includePointsOfInterest)
             {
-                var cityResult = new CityDto()
-                {
-                    Id = city.Id,
-                    Name = city.Name,
-                    Description = city.Description
-                };
 
-                foreach (var item in city.PointsOfInterest)
-                {
-                    cityResult.PointsOfInterest.Add(new PointOfInterestDto()
-                    {
-                        Id = item.Id,
-                        Name = item.Name,
-                        Description = item.Description,                       
-                    });
-                }
+                var cityResult = Mapper.Map<CityDto>(city);
+
                 return Ok(cityResult);
             }
 
-            var cityWithoutPointsOfInterest = new CityWithoutPointsOfInterestDto()
-            {
-                Id = city.Id,
-                Name = city.Name,
-                Description = city.Description
-            };
+            var cityWithoutPointsOfInterest = Mapper.Map<CityWithoutPointsOfInterestDto>(city);
             return Ok(cityWithoutPointsOfInterest);
         }
     }

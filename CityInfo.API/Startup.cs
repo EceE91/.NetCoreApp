@@ -129,6 +129,13 @@ namespace CityInfo.API
             // add statuscode middleware to the pipeline
             app.UseStatusCodePages();
 
+            // configure automapper
+            AutoMapper.Mapper.Initialize(cfg => {
+                cfg.CreateMap<Entities.City, Models.CityWithoutPointsOfInterestDto>();
+                cfg.CreateMap<Entities.City, Models.CityDto>();
+                cfg.CreateMap<Entities.PointOfInterest, Models.PointOfInterestDto>();
+            });
+
             // add mvc middleware to the pipeline
             app.UseMvc();
 
