@@ -12,6 +12,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        "cityInfoDBConnectionString": "Server=myProductionServer;Database=CityInfoDB;UserId=test;Password=test;",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },

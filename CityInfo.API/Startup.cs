@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using CityInfo.API.Entities;
+using Microsoft.EntityFrameworkCore;
 
 // this class is the entry point of our web app
 
@@ -73,14 +75,19 @@ namespace CityInfo.API
 #else
             services.AddTransient<IMailService, CloudMailService>();
 #endif
-
+            // package manager console type PM> Add-Migration CityInfoDBPOIDescriptionMigration
+            // add connection string to appsettings.json 
+            // this works when the environment is set to development
+            var connectionString = Startup.Configuration["connectionStrings:cityInfoDBConnectionString"];
+            //var connectionString = @"Server=(localdb)\mssqllocaldb;Database=CityInfoDB;Trusted_Connection=true";
+            services.AddDbContext<CityInfoContext>( o => o.UseSqlServer(connectionString));
         }
 
         // ConfigureServices is an optional method. 
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, CityInfoContext context)
         {
             // dependecy injection
             // built-in logger system
@@ -111,6 +118,8 @@ namespace CityInfo.API
                 // eğer development'ta değilsek hata buraya düşecek
                 app.UseExceptionHandler();
             }
+
+            context.EnsureSeedDataForContext(); // add data to database
 
             // add statuscode middleware to the pipeline
             app.UseStatusCodePages();
