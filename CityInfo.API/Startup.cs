@@ -122,9 +122,7 @@ namespace CityInfo.API
                 app.UseExceptionHandler();
             }
 
-            context.EnsureSeedDataForContext(); // add data to database
-
-            
+            context.EnsureSeedDataForContext(); // add data to database            
 
             // add statuscode middleware to the pipeline
             app.UseStatusCodePages();
@@ -134,6 +132,9 @@ namespace CityInfo.API
                 cfg.CreateMap<Entities.City, Models.CityWithoutPointsOfInterestDto>();
                 cfg.CreateMap<Entities.City, Models.CityDto>();
                 cfg.CreateMap<Entities.PointOfInterest, Models.PointOfInterestDto>();
+                cfg.CreateMap<Models.PointOfInterestForCreationDto, Entities.PointOfInterest>();
+                cfg.CreateMap<Models.PointOfInterestForUpdateDto, Entities.PointOfInterest>();
+                cfg.CreateMap<Entities.PointOfInterest, Models.PointOfInterestForUpdateDto>();
             });
 
             // add mvc middleware to the pipeline

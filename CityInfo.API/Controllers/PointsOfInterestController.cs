@@ -94,27 +94,23 @@ namespace CityInfo.API.Controllers
                 return BadRequest();
             }
 
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            if (!_cityInfoRepository.CityExists(cityId))
             {
-                return NotFound(); // 404 error
+                return NotFound();
             }
 
-            var maxPointOfInterestId = CitiesDataStore.Current.Cities
-                .SelectMany(c => c.PointsOfInterest).Max(p => p.Id); // use selectMany if you wanna return a list
-
-            var finalPointOfInterest = new PointOfInterestDto()
+            var finalPointOfInterestEntity = Mapper.Map<Entities.PointOfInterest>(pointOfInterest);
+            _cityInfoRepository.AddPointOfInterestForCity(cityId, finalPointOfInterestEntity);
+            if (!_cityInfoRepository.Save())
             {
-                Id = ++maxPointOfInterestId,
-                Name = pointOfInterest.Name,
-                Description = pointOfInterest.Description
-            };
+                return StatusCode(500, "A problem happened while handling your request");
+            }
 
-            city.PointsOfInterest.Add(finalPointOfInterest);
+            var createdPointOfInterestToReturn = Mapper.Map<Models.PointOfInterestDto>(finalPointOfInterestEntity);
 
             // 201 successfully created
             return CreatedAtRoute("GetPointOfInterest",
-                new { cityId = cityId, id = finalPointOfInterest.Id }, finalPointOfInterest);
+                new { cityId = cityId, id = createdPointOfInterestToReturn.Id }, createdPointOfInterestToReturn);
         }
 
         [HttpPut("{cityId}/pointsofinterest/{id}")] // full update
@@ -136,21 +132,24 @@ namespace CityInfo.API.Controllers
                 return BadRequest();
             }
 
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            if (!_cityInfoRepository.CityExists(cityId))
             {
-                return NotFound(); // 404 error
+                return NotFound(); // 404 not found
             }
 
-            var oldPointOfInterest = city.PointsOfInterest.FirstOrDefault(c => c.Id == id);
-
-            if (oldPointOfInterest == null)
+            var pointOfInterestEntity = _cityInfoRepository.GetPointOfInterestForCity(cityId, id);
+            if (pointOfInterestEntity == null)
             {
                 return NotFound();
             }
 
-            oldPointOfInterest.Name = pointOfInterest.Name;
-            oldPointOfInterest.Description = pointOfInterest.Description;
+            Mapper.Map(pointOfInterest, pointOfInterestEntity);
+
+            // save to database (persistency)
+            if (!_cityInfoRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while handling your request");
+            }
 
             return NoContent(); // save successfully but dont return te updated value
         }
@@ -165,34 +164,19 @@ namespace CityInfo.API.Controllers
                 return BadRequest(); // 400 error, url doesnt exist
             }
 
-
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            if (!_cityInfoRepository.CityExists(cityId))
             {
-                return NotFound(); // 404 error
+                return NotFound(); // 404 not found
             }
 
-            var oldPointOfInterest = city.PointsOfInterest.FirstOrDefault(c => c.Id == id);
-
-            if (oldPointOfInterest == null)
+            var pointOfInterestEntity = _cityInfoRepository.GetPointOfInterestForCity(cityId, id);
+            if (pointOfInterestEntity == null)
             {
                 return NotFound();
             }
 
-            var pointsOfInterestFromPatch = new PointOfInterestForUpdateDto
-            {
-                Name = oldPointOfInterest.Name,
-                Description = oldPointOfInterest.Description
-            };
+            var pointsOfInterestFromPatch = Mapper.Map<PointOfInterestForUpdateDto>(pointOfInterestEntity);
 
-            // at this point, applyto operation maps new values in patchDoc to pointsOfInterestFromPatch (replace)
-            // postman body:
-            // [
-            //      {
-            //          "op": "replace", // update operation
-            //          "path": "/name",
-            //          "value": "Updated - Central Park"
-            //      }]
             patchDoc.ApplyTo(pointsOfInterestFromPatch, ModelState);
 
             if (!ModelState.IsValid)
@@ -209,9 +193,14 @@ namespace CityInfo.API.Controllers
             // required olmasına rağmen name'i validate etmeden siler. Bunu yapmasın diye TryValidateModel ekleriz
             TryValidateModel(pointsOfInterestFromPatch);
 
-            oldPointOfInterest.Name = pointsOfInterestFromPatch.Name;
-            oldPointOfInterest.Description = pointsOfInterestFromPatch.Description;
-
+            // map dto to entity
+            Mapper.Map(pointsOfInterestFromPatch, pointOfInterestEntity);
+            
+            // save to database (persistency)
+            if (!_cityInfoRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while handling your request");
+            }
             return NoContent();
         }
 
@@ -219,25 +208,28 @@ namespace CityInfo.API.Controllers
         [HttpDelete("{cityId}/pointsofinterest/{id}")] // delete
         public IActionResult DeletePointOfInterest(int cityId, int id)
         {
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
-            if (city == null)
+            if (!_cityInfoRepository.CityExists(cityId))
             {
-                return NotFound(); // 404 error
+                return NotFound(); // 404 not found
             }
 
-
-            var oldPointOfInterest = city.PointsOfInterest.FirstOrDefault(c => c.Id == id);
-
-            if (oldPointOfInterest == null)
+            var pointOfInterestEntity = _cityInfoRepository.GetPointOfInterestForCity(cityId, id);
+            if (pointOfInterestEntity == null)
             {
                 return NotFound();
             }
 
-            city.PointsOfInterest.Remove(oldPointOfInterest);
+            _cityInfoRepository.DeletePointOfInterest(pointOfInterestEntity);
+
+            // save to database (persistency)
+            if (!_cityInfoRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while handling your request");
+            }
 
             // send mail when deleted
             _mailService.Send("Poin of Interest is deleted"
-                , $"Point of Interest {oldPointOfInterest.Name} with id {oldPointOfInterest.Id} was deleted.");
+                , $"Point of Interest {pointOfInterestEntity.Name} with id {pointOfInterestEntity.Id} was deleted.");
 
             return NoContent(); // return 204 if successful
         }
